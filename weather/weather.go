@@ -8,51 +8,48 @@ import (
 	"net/http"
 )
 
-const apiKey = "aa34c9b93c8e923537921e29afefbd23"
+const apiKey = "eb0f044bf44071e91b4232cbde8cd921"
 
-type WeatherReport struct {
+type Report struct {
+	Name  string `json:"name"`
 	Weather []struct {
-		Main        string `json:"main"`
 		Description string `json:"description"`
 	}
 	Main struct {
 		Temperature    float64 `json:"temp"`
-		TemperatureMin float64 `json:"temp_min"`
-		TemperatureMax float64 `json:"temp_max"`
 	}
 	Sys struct {
-		Country string `json:"country"`
 		Sunrise int    `json:"sunrise"`
 		Sunset  int    `json:"sunset"`
 	}
-	Name  string `json:"name"`
-	Error string `json:"message"`
 }
 
-type urlType struct {
-	city   string
-	apiKey string
-}
-
-func GetForecast() []byte {
-	var city string = "cologne"
-	forecastUrl := fmt.Sprintf("http://api.openweathermap.org/data/2.5/weather?q={%s}&appid=%s", city, apiKey)
-	res, err := http.Get(forecastUrl)
+func getData(city string) ([]byte, error) {
+	url := fmt.Sprintf("http://api.openweathermap.org/data/2.5/weather?q={%s}&appid=%s", city, apiKey)
+	res, err := http.Get(url)
 	defer res.Body.Close()
 	if err != nil {
 		log.Print(err)
+		return nil, err
 	}
-
-	weather, err := ioutil.ReadAll(res.Body)
-	fmt.Println(weather)
-	return weather
+	data, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		log.Print(err)
+		return nil, err
+	}
+	return data, nil
 }
 
-func CreateForecast() (WeatherReport, error) {
-	var report WeatherReport
-	data := GetForecast()
+func GetForecast(city string) (Report, error) {
+	data, err := getData(city)
+	if err != nil {
+		log.Print(err)
+		return Report{}, err
+	}
 
+	var report Report
 	if err := json.Unmarshal(data, &report); err != nil {
+		log.Print(err)
 		return report, err
 	}
 	return report, nil
