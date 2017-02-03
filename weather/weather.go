@@ -32,8 +32,8 @@ func getData(city string) ([]byte, error) {
 		return nil, err
 	}
 
-	data, err := ioutil.ReadAll(res.Body)
 	defer res.Body.Close()
+	data, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		log.Print(err)
 		return nil, err
